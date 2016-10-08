@@ -1,6 +1,6 @@
-var mongo = require('mongodb')
+// var mongo = require('mongodb')
 var express = require('express');
-var bodyParser = require('body-parser')
+// var bodyParser = require('body-parser')
 // var schedule_service = require('./schedule_service')
 // var service_instance = new schedule_service();
 var app = express();

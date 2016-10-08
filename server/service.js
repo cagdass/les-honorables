@@ -7,16 +7,17 @@ var Promise = require("bluebird");
 
 function service(db){
   var service = this;
-  var validate = require('validate.js')
 
-  service.find_by_student_name = function(firstName, lastName) {
+  service.find_student_by_name = function(firstName, lastName) {
+    console.log("Function call!");
+
     return Promise.try(function() {
       return mongo_service.getCollection()
       .then(function(collection) {
-        return collection.find({'firstName': {'$regex': firstName, '$options': 'i'}, 'lastName': {'$regex': lastName, '$options': 'i'}});
+        return collection.find({'firstName': {'$regex': '^' + firstName + '$', '$options': 'i'}, 'lastName': {'$regex': '^' + lastName + '$', '$options': 'i'}}, {'_id': 0}).toArray();
       })
     })
-  }
+  };
 }
 
 module.exports = service;
