@@ -21,6 +21,13 @@ deptDict = {}
 host = 'localhost'
 port = 27017
 
+client = MongoClient(host, port)
+db = client.honor # Change the database name
+collection = db['students']
+collectionDept = db['departments']
+collecrion.delete_many({})
+collection.delete_many({})
+
 while current != end:
     print current
     # Get the curretn semester's page
@@ -38,12 +45,6 @@ while current != end:
         except KeyError:
             deptDict[deptShort] = deptLong
     tables = soup.findAll('table')
-
-    client = MongoClient(host, port)
-    db = client.honor # Change the database name
-    collection = db['semester' + current]
-    collectionDept = db['departments']
-    collection.delete_many({})
 
     for i in xrange(1, len(tables)):
         table = tables[i]
@@ -76,11 +77,11 @@ while current != end:
                     curFirstNamesHH.append(firstName)
                     curLastNamesHH.append(lastName)
         for i in xrange(len(curFirstNamesH)):
-            student = {'firstName': curFirstNamesH[i], 'lastName': curLastNamesH[i], 'status': 'Honor', 'department': curDept}
+            student = {'firstName': curFirstNamesH[i], 'lastName': curLastNamesH[i], 'status': 'Honor', 'department': curDept, 'semester': current}
             # print student
             studentId = collection.insert_one(student).inserted_id
         for i in xrange(len(curFirstNamesHH)):
-            student = {'firstName': curFirstNamesHH[i], 'lastName': curLastNamesHH[i], 'status': 'High Honor', 'department': curDept}
+            student = {'firstName': curFirstNamesHH[i], 'lastName': curLastNamesHH[i], 'status': 'High Honor', 'department': curDept, 'semester': current}
             # print student
             studentId = collection.insert_one(student).inserted_id
     current = incrementSemester(current)
