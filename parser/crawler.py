@@ -12,8 +12,7 @@ def incrementSemester(semester):
 
 # URL to the list of HH/H students
 url = 'https://stars.bilkent.edu.tr/public/honor/?donem='
-# current = '19861'
-current = '20152'
+current = '19861'
 end = '20161'
 
 # Dictionary of courses e.g. deptDict['CS'] == 'Computer Engineering'
