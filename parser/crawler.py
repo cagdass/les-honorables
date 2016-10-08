@@ -25,7 +25,7 @@ client = MongoClient(host, port)
 db = client.honor # Change the database name
 collection = db['students']
 collectionDept = db['departments']
-collecrion.delete_many({})
+collectionDept.delete_many({})
 collection.delete_many({})
 
 while current != end:
