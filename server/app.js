@@ -14,7 +14,8 @@ app.use(function(req, res, next) {
 var router = require('./router');
 app.use(router);
 
+var port = process.argv[2];
 
-app.listen(port=3000, function () {
+app.listen(port, function () {
   console.log('Honorable app listening on port ' + port);
 });
