@@ -13,7 +13,7 @@ module.exports = (function() {
         // Parameters.
         var firstName = req.query.firstName;
         var lastName = req.query.lastName;
-        console.log("Hola!");
+        
         var ip = req.headers['x-forwarded-for'] ||
             req.connection.remoteAddress ||
             req.socket.remoteAddress ||
