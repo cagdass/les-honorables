@@ -155,6 +155,7 @@ class Main extends Component {
           />
         <br />
         <p>{"Type in the name of a Bilkent Student and witness their academic excellence"}</p>
+        <p>{"Beware the Turkish characters."}</p>
         { about
           ?
           <div style={style.aboutContainer}>
