@@ -71,13 +71,14 @@ class Main extends Component {
     this.state = {
       about: false,
       open: false,
+      loading: false
     };
   }
 
   findStudents(firstName, lastName) {
     return service.searchStudents(firstName, lastName)
         .then(students => {
-            this.setState({"students": students});
+            this.setState({"loading": false, "students": students});
         })
         .catch(searchError => this.setState({searchError}));
   }
@@ -110,15 +111,21 @@ class Main extends Component {
     this.setState({lastName: e.target.value})
   }
 
+  handleSubmit() {
+    this.setState({loading: true, students: []});
+  }
+
   handleKeyPress(e) {
     if (e.key === 'Enter') {
       let { firstName, lastName } = this.state;
+      this.handleSubmit();
       this.findStudents(firstName, lastName);
     }
   }
 
   handleHonorClick() {
     let { firstName, lastName } = this.state;
+    this.handleSubmit();
     this.findStudents(firstName, lastName);
   }
 
@@ -128,7 +135,7 @@ class Main extends Component {
       return suffix + " Fall";
     }
     else {
-      return suffix + " Spring";
+      return (Number(suffix) + 1) + " Spring";
     }
   }
 
@@ -140,10 +147,14 @@ class Main extends Component {
       },
       aboutContainer: {
         marginTop: 60
+      },
+      loadingContainer: {
+        marginTop: 100,
+        fontSize: 16
       }
     }
 
-    let { about, students } = this.state;
+    let { about, students, loading } = this.state;
 
     return (<div>
       <MuiThemeProvider muiTheme={muiTheme}>
@@ -181,6 +192,7 @@ class Main extends Component {
             <br />
             <br />
             <RaisedButton onClick={this.handleHonorClick.bind(this)} onKeyPress={this.handleKeyPress.bind(this)} label="Find l'honorable" backgroundColor="orange" labelColor="white" style={style.button} />
+            {loading && <p style={style.loadingContainer}>Loading...</p>}
             {students && students.length > 0 && <Table
               selectable={false}
               multiSelectable={false}
@@ -209,6 +221,7 @@ class Main extends Component {
                 ))}
               </TableBody>
             </Table>}
+            {!loading && students && students.length == 0 && <p style={style.loadingContainer}>No result</p>}
           </div>}
         </div>
       </MuiThemeProvider></div>
