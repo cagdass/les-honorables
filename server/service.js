@@ -12,7 +12,7 @@ function service(db){
     return Promise.try(function() {
       return mongo_service.getCollection()
       .then(function(collection) {
-        return collection.find({'firstName': {'$regex': '^' + firstName + '$', '$options': 'i'}, 'lastName': {'$regex': '^' + lastName + '$', '$options': 'i'}}, {'_id': 0}).sort({'lastName': 1, 'firstName': 1, 'semester': 1}).toArray();
+        return collection.find({'$or': [{'firstName': {'$regex': firstName, '$options': 'i'}, 'lastName': {'$regex': lastName, '$options': 'i'}}, {'firstNameLatin': {'$regex': firstName, '$options': 'i'}, 'lastNameLatin': {'$regex': lastName, '$options': 'i'}}]}, {'_id': 0}).sort({'lastName': 1, 'firstName': 1, 'semester': 1}).toArray();
       })
     })
   };

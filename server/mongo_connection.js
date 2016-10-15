@@ -1,5 +1,5 @@
 var mongo = require('mongodb').MongoClient;
-var default_url = 'mongodb://127.0.0.1:27017/honor';
+var default_url = 'mongodb://127.0.0.1:27017/leshonorables';
 var default_collection = 'students';
 var default_departments = 'departments';
 
