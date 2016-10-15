@@ -1,7 +1,25 @@
+#!/usr/bin/python
+# -*- coding: latin-1 -*-
 import urllib2
 import json
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+
+def latinizeString(s):
+    s = s.replace(u"ö", "o")
+    s = s.replace(u"Ö", "O")
+    s = s.replace(u"Ç", "C")
+    s = s.replace(u"ç", "c")
+    s = s.replace(u"İ", "I")
+    s = s.replace(u"ı", "i")
+    s = s.replace(u"ü", "u")
+    s = s.replace(u"U", "U")
+    s = s.replace(u"Ş", "S")
+    s = s.replace(u"ş", "s")
+    s = s.replace(u"ğ", "g")
+    s = s.replace(u"Ğ", "G")
+
+    return s
 
 # Logic to return the next semester
 def incrementSemester(semester):
@@ -15,6 +33,9 @@ url = 'https://stars.bilkent.edu.tr/public/honor/?donem='
 current = '19861'
 end = '20161'
 
+# print(latinizeString(u'Çağdaş Öztekin'))
+# print(escapeRegexCharacters('a.'))
+
 # Dictionary of courses e.g. deptDict['CS'] == 'Computer Engineering'
 deptDict = {}
 
@@ -22,7 +43,7 @@ host = 'localhost'
 port = 27017
 
 client = MongoClient(host, port)
-db = client.honor # Change the database name
+db = client.leshonorables # Change the database name
 collection = db['students']
 collectionDept = db['departments']
 collectionDept.delete_many({})
@@ -77,11 +98,11 @@ while current != end:
                     curFirstNamesHH.append(firstName)
                     curLastNamesHH.append(lastName)
         for i in xrange(len(curFirstNamesH)):
-            student = {'firstName': curFirstNamesH[i], 'lastName': curLastNamesH[i], 'status': 'Honor', 'department': curDept, 'semester': current}
+            student = {'firstName': curFirstNamesH[i], 'lastName': curLastNamesH[i], 'firstNameLatin': latinizeString(curFirstNamesH[i]), 'lastNameLatin': latinizeString(curLastNamesH[i]), 'status': 'Honor', 'department': curDept, 'semester': current}
             # print student
             studentId = collection.insert_one(student).inserted_id
         for i in xrange(len(curFirstNamesHH)):
-            student = {'firstName': curFirstNamesHH[i], 'lastName': curLastNamesHH[i], 'status': 'High Honor', 'department': curDept, 'semester': current}
+            student = {'firstName': curFirstNamesHH[i], 'lastName': curLastNamesHH[i], 'firstNameLatin': latinizeString(curFirstNamesHH[i]), 'lastNameLatin': latinizeString(curLastNamesHH[i]), 'status': 'High Honor', 'department': curDept, 'semester': current}
             # print student
             studentId = collection.insert_one(student).inserted_id
     current = incrementSemester(current)
