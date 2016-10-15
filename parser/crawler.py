@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 import urllib2
 import json
 from bs4 import BeautifulSoup
@@ -33,7 +33,6 @@ url = 'https://stars.bilkent.edu.tr/public/honor/?donem='
 current = '19861'
 end = '20161'
 
-# print(latinizeString(u'Çağdaş Öztekin'))
 # print(escapeRegexCharacters('a.'))
 
 # Dictionary of courses e.g. deptDict['CS'] == 'Computer Engineering'
