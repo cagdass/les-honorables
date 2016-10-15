@@ -23,6 +23,7 @@ class Service {
 
   searchStudents(firstName, lastName) {
       return baseAPI.get("student?firstName=" + firstName  + "&lastName=" + lastName).catch(error => {
+          console.error(error);
           return null;
       })
   }
@@ -62,7 +63,7 @@ const Settings = (props) => (
 Settings.muiName = 'IconMenu';
 
 class Main extends Component {
-  constructor(props, context) {
+  constructor (props, context) {
     super(props, context);
 
     this.handleRequestClose = this.handleRequestClose.bind(this);
@@ -71,25 +72,71 @@ class Main extends Component {
     this.state = {
       about: false,
       open: false,
-      loading: false
+      loading: false,
+      dirty: false,
+      students: [],
+      processedStudents: []
     };
   }
 
-  findStudents(firstName, lastName) {
+  findStudents (firstName, lastName) {
     return service.searchStudents(firstName, lastName)
         .then(students => {
             this.setState({"loading": false, "students": students});
+            this.processStudents();
         })
         .catch(searchError => this.setState({searchError}));
   }
 
-  handleRequestClose() {
+  processStudents () {
+    let { students } = this.state;
+    let processedStudents = [];
+    let i = 0;
+    for (; i < students.length; i += 1) {
+      let current = students[i];
+      let s = 0;
+      let found = false;
+      for (; s < processedStudents.length; s += 1) {
+        // "Probably" the same student if the names and the departments match.
+        // Though a possible bug may arise for students who changed departments.
+        if (processedStudents[s].firstName === students[i].firstName
+          && processedStudents[s].lastName === students[i].lastName) {
+            // The student is found.
+            found = true;
+
+            // Add the found semester and the honor status to the student's record.
+            processedStudents[s].semesters.push({
+              'status': students[i].status,
+              'semester': students[i].semester
+            });
+          }
+      }
+
+      if (!found) {
+        processedStudents.push({
+          'firstName': students[i].firstName,
+          'lastName': students[i].lastName,
+          'department': students[i].department,
+          'semesters': []
+        })
+
+        processedStudents[processedStudents.length - 1].semesters.push({
+          'status': students[i].status,
+          'semester': students[i].semester
+        });
+      }
+    }
+
+    this.setState({'processedStudents': processedStudents});
+  }
+
+  handleRequestClose () {
     this.setState({
       open: false,
     });
   }
 
-  handleTouchTap() {
+  handleTouchTap () {
     this.setState({
       open: true,
     });
@@ -112,7 +159,12 @@ class Main extends Component {
   }
 
   handleSubmit() {
-    this.setState({loading: true, students: []});
+    this.setState({
+      dirty: true,
+      loading: true,
+      students: [],
+      processedStudents: []
+    });
   }
 
   handleKeyPress(e) {
@@ -139,6 +191,53 @@ class Main extends Component {
     }
   }
 
+  renderStudent (student) {
+    let { semesters } = student;
+
+    const styles = {
+      titleStyle: {
+        marginLeft: 20
+      },
+      containerStyle: {
+        marginBottom: 30
+      }
+    }
+
+    return (
+      <div style={styles.containerStyle}>
+        <h3 style={styles.titleStyle}>{student.firstName + " " + student.lastName + ", " + student.department}</h3>
+        <Table
+          selectable={false}
+          multiSelectable={false}
+          >
+          <TableHeader
+            displaySelectAll={false}
+            adjustForCheckbox={false}
+            enableSelectAll={false}>
+            <TableRow>
+              <TableHeaderColumn>Status</TableHeaderColumn>
+              <TableHeaderColumn>Semester</TableHeaderColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody
+            displayRowCheckbox={false}
+            showRowHover deselectOnClickaway>
+            {semesters.map(this.renderSemester.bind(this))}
+          </TableBody>
+        </Table>
+      </div>
+    )
+  }
+
+  renderSemester (item) {
+    return (
+      <TableRow>
+        <TableRowColumn>{this.getSemester(item.semester)}</TableRowColumn>
+        <TableRowColumn>{item.status}</TableRowColumn>
+      </TableRow>
+    )
+  }
+
   render() {
     const style = {
       button: {
@@ -146,85 +245,70 @@ class Main extends Component {
         margin: 12
       },
       aboutContainer: {
+        textAlign: 'center',
         marginTop: 60
       },
       loadingContainer: {
         marginTop: 100,
         fontSize: 16
+      },
+      aboutContainerParagraph: {
+        fontSize: 12
       }
     }
 
-    let { about, students, loading } = this.state;
+    let { about, students = [], processedStudents = [], loading, dirty } = this.state;
 
     return (<div>
       <MuiThemeProvider muiTheme={muiTheme}>
-        <div style={styles.container}>
+        <div>
           <AppBar
             title="Les Honorables"
             iconElementLeft={about ? <IconButton onClick={this.handleArrowClick.bind(this)}><ArrowBack /></IconButton> : <IconButton />}
             iconElementRight={<Settings handleClick={this.handleMenuClick.bind(this)}/>}
-          />
-        <br />
-        <p>{"Type in the name of a Bilkent Student and witness their academic excellence"}</p>
-        <p>{"Beware the Turkish characters."}</p>
-        { about
-          ?
-          <div style={style.aboutContainer}>
-            <h2>About Les Honorables</h2>
-            <p>You can check and drop a star on the Github repository:</p>
-            <br />
-            <a href="https://www.github.com/cagdass/les-honorables">github.com/cagdass/les-honorables</a>
-          </div>
-          :
-          <div>
-            <br />
-            <TextField
-              hintText="First name"
-              onKeyPress={this.handleKeyPress.bind(this)}
-              onChange={this.handleFirstNameChange.bind(this)}
             />
-            <br />
-            <TextField
-              hintText="Last name"
-              onKeyPress={this.handleKeyPress.bind(this)}
-              onChange={this.handleLastNameChange.bind(this)}
-            />
-            <br />
-            <br />
-            <RaisedButton onClick={this.handleHonorClick.bind(this)} onKeyPress={this.handleKeyPress.bind(this)} label="Find l'honorable" backgroundColor="orange" labelColor="white" style={style.button} />
-            {loading && <p style={style.loadingContainer}>Loading...</p>}
-            {students && students.length > 0 && <Table
-              selectable={false}
-              multiSelectable={false}
-              >
-              <TableHeader
-                displaySelectAll={false}
-                adjustForCheckbox={false}
-                enableSelectAll={false}>
-                <TableRow>
-                  <TableHeaderColumn>Name</TableHeaderColumn>
-                  <TableHeaderColumn>Department</TableHeaderColumn>
-                  <TableHeaderColumn>Status</TableHeaderColumn>
-                  <TableHeaderColumn>Semester</TableHeaderColumn>
-                </TableRow>
-              </TableHeader>
-              <TableBody
-                displayRowCheckbox={false}
-                showRowHover deselectOnClickaway>
-                {students && students.map((student, index) => (
-                  <TableRow key={index}>
-                    <TableRowColumn>{student.firstName} {student.lastName}</TableRowColumn>
-                    <TableRowColumn>{student.department}</TableRowColumn>
-                    <TableRowColumn>{student.status}</TableRowColumn>
-                    <TableRowColumn>{this.getSemester(student.semester)}</TableRowColumn>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>}
-            {!loading && students && students.length == 0 && <p style={style.loadingContainer}>No result</p>}
-          </div>}
+          <br />
+          { about
+            ?
+            <div style={style.aboutContainer}>
+              <h2>About</h2>
+              <p style={style.aboutContainerParagraph}>You can check and drop a star on the Github repository:</p>
+              <br />
+              <a style={style.aboutContainerParagraph} href="https://www.github.com/cagdass/les-honorables">github.com/cagdass/les-honorables</a>
+              <br />
+              <p style={style.aboutContainerParagraph}>{"Suggestions are welcome. Be like Ani!"}</p>
+            </div>
+            :
+            <div>
+              <div style={styles.container}>
+                <p>{"Type in the name of a Bilkent Student and witness their academic prowess"}</p>
+                <br />
+                <TextField
+                  hintText="First name"
+                  onKeyPress={this.handleKeyPress.bind(this)}
+                  onChange={this.handleFirstNameChange.bind(this)}
+                />
+                <br />
+                <TextField
+                  hintText="Last name"
+                  onKeyPress={this.handleKeyPress.bind(this)}
+                  onChange={this.handleLastNameChange.bind(this)}
+                />
+                <br />
+                <br />
+                <RaisedButton onClick={this.handleHonorClick.bind(this)} onKeyPress={this.handleKeyPress.bind(this)} label="Find l'honorable" backgroundColor="orange" labelColor="white" style={style.button} />
+              </div>
+              <div>
+                {loading && <div style={styles.container}><p style={style.loadingContainer}>Loading...</p></div>}
+                {processedStudents && processedStudents.length > 0 &&
+                  processedStudents.map(this.renderStudent.bind(this))}
+                {!loading && dirty && processedStudents && processedStudents.length == 0 && <div style={styles.container}><p style={style.loadingContainer}>No result</p></div>}
+              </div>
+            </div>
+          }
         </div>
-      </MuiThemeProvider></div>
+      </MuiThemeProvider>
+    </div>
     );
   }
 }
