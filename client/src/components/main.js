@@ -2,7 +2,7 @@
  * In this file, we create a React component
  * which incorporates components provided by Material-UI.
  */
-import React, {Component} from 'react';
+import React, { Component, PropTypes } from 'react';
 import { AppBar, MenuItem, IconMenu, IconButton, TextField, RaisedButton } from 'material-ui';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
@@ -85,6 +85,13 @@ class Main extends Component {
     };
   }
 
+  componentWillMount() {
+    let { router } = this.context;
+
+    console.log("Router");
+    console.log(router);
+  }
+
   componentDidMount() {
     let { firstName, lastName } = this.state;
 
@@ -165,11 +172,27 @@ class Main extends Component {
   }
 
   handleFirstNameChange(e) {
-    this.setState({firstName: e.target.value})
+    let firstName = e.target.value;
+    let { lastName } = this.state;
+    this.context.router.push({
+      query: {
+        "firstName": firstName,
+        "lastName": lastName
+      }
+    });
+    this.setState({"firstName": firstName})
   }
 
   handleLastNameChange(e) {
-    this.setState({lastName: e.target.value})
+    let lastName = e.target.value;
+    let { firstName } = this.state;
+    this.context.router.push({
+      query: {
+        "firstName": firstName,
+        "lastName": lastName
+      }
+    });
+    this.setState({"lastName": lastName})
   }
 
   handleSubmit() {
@@ -329,5 +352,9 @@ class Main extends Component {
     );
   }
 }
+
+Main.contextTypes = {
+  router: PropTypes.object
+};
 
 export default Main;
