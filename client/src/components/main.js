@@ -290,18 +290,26 @@ class Main extends Component {
         fontSize: 16
       },
       aboutContainerParagraph: {
-        fontSize: 12
+        fontSize: 14
+      },
+      logoStyle: {
+        paddingRight: 45,
+        paddingTop: 2,
+        paddingBottom: 5
       }
     }
 
     let { about, students = [], processedStudents = [], loading, dirty, firstName, lastName } = this.state;
+    const logoImage = require('../../assets/images/logo.png');
 
     return (<div>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
           <AppBar
             title="Les Honorables"
-            iconElementLeft={about ? <IconButton onClick={this.handleArrowClick.bind(this)}><ArrowBack /></IconButton> : <IconButton />}
+            iconElementLeft={about
+              ? <IconButton onClick={this.handleArrowClick.bind(this)}><ArrowBack /></IconButton>
+            : <IconButton style={style.logoStyle}><img  src={logoImage} /></IconButton>}
             iconElementRight={<Settings handleClick={this.handleMenuClick.bind(this)}/>}
             />
           <br />
@@ -313,7 +321,9 @@ class Main extends Component {
               <br />
               <a style={style.aboutContainerParagraph} href="https://www.github.com/cagdass/les-honorables">github.com/cagdass/les-honorables</a>
               <br />
-              <p style={style.aboutContainerParagraph}>{"Suggestions are welcome. Be like Ani!"}</p>
+              <p style={style.aboutContainerParagraph}>{"Suggestions are welcome. Be like Ani! (actually don't :p)"}</p>
+              <br />
+              <p style={style.aboutContainerParagraph}>{"Lastly, feel free to donate. Even petty coins are appreciated, I am the the long haired, hijab wearing man on the campus."}</p>
             </div>
             :
             <div>

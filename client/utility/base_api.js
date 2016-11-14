@@ -1,4 +1,5 @@
 import config from "../config.js";
+import 'whatwg-fetch';
 
 let TOKEN_KEY = "token";
 class BaseAPI {
