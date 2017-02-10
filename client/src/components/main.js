@@ -3,7 +3,7 @@
  * which incorporates components provided by Material-UI.
  */
 import React, { Component, PropTypes } from 'react';
-import { AppBar, MenuItem, IconMenu, IconButton, TextField, RaisedButton } from 'material-ui';
+import { AppBar, MenuItem, IconMenu, IconButton, TextField, RaisedButton, DropDownMenu } from 'material-ui';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import ArrowBack from 'material-ui/svg-icons/navigation/arrow-back';
@@ -21,11 +21,18 @@ class Service {
   constructor() {
   }
 
-  searchStudents(firstName, lastName) {
-      return baseAPI.get("student?firstName=" + firstName  + "&lastName=" + lastName).catch(error => {
+  searchStudents(firstName, lastName, department) {
+      return baseAPI.get("student?firstName=" + firstName  + "&lastName=" + lastName + "&department=" + department).catch(error => {
           console.error(error);
           return null;
       })
+  }
+
+  searchDepartments() {
+    return baseAPI.get("departments").catch(error => {
+      console.error(error);
+      return null;
+    })
   }
 }
 
@@ -35,6 +42,9 @@ const styles = {
   container: {
     textAlign: 'center',
   },
+  leProwess: {
+    fontSize: 15
+  }
 };
 
 const muiTheme = getMuiTheme({
@@ -72,6 +82,8 @@ class Main extends Component {
 
     let _firstName = params.firstName || '';
     let _lastName = params.lastName || '';
+    let _department = params.department ||  "ALL";
+    let _departments = [<MenuItem value="ALL" key="ALL" primaryText={`All departments`} />];
 
     this.state = {
       about: false,
@@ -80,6 +92,8 @@ class Main extends Component {
       dirty: false,
       firstName: _firstName,
       lastName: _lastName,
+      department: _department,
+      departments: _departments,
       students: [],
       processedStudents: []
     };
@@ -93,20 +107,37 @@ class Main extends Component {
   }
 
   componentDidMount() {
-    let { firstName, lastName } = this.state;
+    let { firstName, lastName, department } = this.state;
 
     if (firstName || lastName) {
-      this.findStudents(firstName, lastName);
+      this.findStudents(firstName, lastName, department);
     }
+
+    this.findDepartments();
   }
 
-  findStudents (firstName, lastName) {
-    return service.searchStudents(firstName, lastName)
+  findStudents (firstName, lastName, department) {
+    return service.searchStudents(firstName, lastName, department)
         .then(students => {
             this.setState({"loading": false, "students": students});
             this.processStudents();
         })
         .catch(searchError => this.setState({searchError}));
+  }
+
+  findDepartments () {
+    let items = [<MenuItem value="ALL" key="ALL"primaryText={`All departments`} />];
+
+    return service.searchDepartments()
+      .then(departments => {
+        departments.sort();
+        for (var i = 0; i < departments.length; i++) {
+          var dept = departments[i];
+          items.push(<MenuItem value={dept} key={dept} primaryText={`${dept}`} />)
+        }
+        this.setState({"departments": items})
+      })
+      .catch(error => { console.error(error) } );
   }
 
   processStudents () {
@@ -128,7 +159,8 @@ class Main extends Component {
             // Add the found semester and the honor status to the student's record.
             processedStudents[s].semesters.push({
               'status': students[i].status,
-              'semester': students[i].semester
+              'semester': students[i].semester,
+              'department': students[i].department
             });
           }
       }
@@ -143,7 +175,8 @@ class Main extends Component {
 
         processedStudents[processedStudents.length - 1].semesters.push({
           'status': students[i].status,
-          'semester': students[i].semester
+          'semester': students[i].semester,
+          'department': students[i].department
         });
       }
     }
@@ -171,28 +204,34 @@ class Main extends Component {
     this.setState({about: false})
   }
 
+  handleDepartmentChange (event, index, value) {
+    this.setState({"department": value});
+  }
+
   handleFirstNameChange(e) {
     let firstName = e.target.value;
-    let { lastName } = this.state;
+    let { lastName, department } = this.state;
     this.context.router.push({
       query: {
         "firstName": firstName,
-        "lastName": lastName
+        "lastName": lastName,
+        "department": department
       }
     });
-    this.setState({"firstName": firstName})
+    this.setState({"firstName": firstName});
   }
 
   handleLastNameChange(e) {
     let lastName = e.target.value;
-    let { firstName } = this.state;
+    let { firstName, department } = this.state;
     this.context.router.push({
       query: {
         "firstName": firstName,
-        "lastName": lastName
+        "lastName": lastName,
+        "department": department
       }
     });
-    this.setState({"lastName": lastName})
+    this.setState({"lastName": lastName});
   }
 
   handleSubmit() {
@@ -206,16 +245,28 @@ class Main extends Component {
 
   handleKeyPress(e) {
     if (e.key === 'Enter') {
-      let { firstName, lastName } = this.state;
+      let { firstName, lastName, department } = this.state;
+      let firstName_ = firstName.trim();
+      let lastName_ = lastName.trim();
+      this.setState({
+        "firstName": firstName_,
+        "lastName": lastName_
+      })
       this.handleSubmit();
-      this.findStudents(firstName, lastName);
+      this.findStudents(firstName_, lastName_, department);
     }
   }
 
   handleHonorClick() {
-    let { firstName, lastName } = this.state;
+    let { firstName, lastName, department } = this.state;
+    let firstName_ = firstName.trim();
+    let lastName_ = lastName.trim();
+    this.setState({
+      "firstName": firstName_,
+      "lastName": lastName_
+    })
     this.handleSubmit();
-    this.findStudents(firstName, lastName);
+    this.findStudents(firstName_, lastName_, department);
   }
 
   getSemester(semester) {
@@ -252,8 +303,9 @@ class Main extends Component {
             adjustForCheckbox={false}
             enableSelectAll={false}>
             <TableRow>
-              <TableHeaderColumn>Status</TableHeaderColumn>
-              <TableHeaderColumn>Semester</TableHeaderColumn>
+              <TableHeaderColumn colSpan="1">Semester</TableHeaderColumn>
+              <TableHeaderColumn colSpan="1">Status</TableHeaderColumn>
+              <TableHeaderColumn colSpan="1">Department</TableHeaderColumn>
             </TableRow>
           </TableHeader>
           <TableBody
@@ -269,8 +321,9 @@ class Main extends Component {
   renderSemester (item) {
     return (
       <TableRow>
-        <TableRowColumn>{this.getSemester(item.semester)}</TableRowColumn>
-        <TableRowColumn>{item.status}</TableRowColumn>
+        <TableRowColumn colSpan="1">{this.getSemester(item.semester)}</TableRowColumn>
+        <TableRowColumn colSpan="1">{item.status}</TableRowColumn>
+        <TableRowColumn colSpan="1">{item.department}</TableRowColumn>
       </TableRow>
     )
   }
@@ -287,10 +340,10 @@ class Main extends Component {
       },
       loadingContainer: {
         marginTop: 100,
-        fontSize: 16
+        fontSize: 18
       },
       aboutContainerParagraph: {
-        fontSize: 14
+        fontSize: 15
       },
       logoStyle: {
         paddingRight: 45,
@@ -299,7 +352,7 @@ class Main extends Component {
       }
     }
 
-    let { about, students = [], processedStudents = [], loading, dirty, firstName, lastName } = this.state;
+    let { about, students = [], processedStudents = [], loading, dirty, firstName, lastName, departments = ["ALL"] } = this.state;
     const logoImage = require('../../assets/images/logo.png');
 
     return (<div>
@@ -328,7 +381,7 @@ class Main extends Component {
             :
             <div>
               <div style={styles.container}>
-                <p>{"Type in the name of a Bilkent Student and witness their academic prowess"}</p>
+                <p style={styles.leProwess}>{"Type in the name of a Bilkent Student and witness their academic prowess"}</p>
                 <br />
                 <TextField
                   hintText="First name"
@@ -344,8 +397,12 @@ class Main extends Component {
                   onChange={this.handleLastNameChange.bind(this)}
                 />
                 <br />
+                <DropDownMenu maxHeight={300} value={this.state.department} onChange={this.handleDepartmentChange.bind(this)}>
+                  {departments}
+                </DropDownMenu>
                 <br />
-                <RaisedButton onClick={this.handleHonorClick.bind(this)} onKeyPress={this.handleKeyPress.bind(this)} label="Find l'honorable" backgroundColor="orange" labelColor="white" style={style.button} />
+                <br />
+                <RaisedButton onClick={this.handleHonorClick.bind(this)} onKeyPress={this.handleKeyPress.bind(this)} label="Fetchez l'honorable" backgroundColor="orange" labelColor="white" style={style.button} />
               </div>
               <div>
                 {loading && <div style={styles.container}><p style={style.loadingContainer}>Loading...</p></div>}
