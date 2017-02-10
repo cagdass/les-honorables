@@ -13,8 +13,9 @@ function service(db){
       return mongo_service.getDepartmentCollection()
       .then(function(collection) {
         keys = [];
-        docs = collection.findMany({});
-        for (key in doc) {
+        docs = collection.find({});
+        console.log(docs);
+        for (key in docs) {
           keys.push(key);
         }
         return keys;
