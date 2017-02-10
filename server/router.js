@@ -28,13 +28,14 @@ module.exports = (function() {
         // Parameters.
         var firstName = req.query.firstName;
         var lastName = req.query.lastName;
+        var department = req.query.department;
 
         var ip = req.headers['x-forwarded-for'] ||
             req.connection.remoteAddress ||
             req.socket.remoteAddress ||
             req.connection.socket.remoteAddress;
         console.log(`Finding student with name ${firstName + " " + lastName}. Request from ${ip} Time ${Date()}`);
-        service_instance.find_student_by_name(firstName, lastName)
+        service_instance.find_student_by_name(firstName, lastName, department)
         .then(function(result){
             if(result == null){
                 res.status(404).send(result);
