@@ -25,7 +25,7 @@ var mongo_service = {
         return collection;
     });
   },
-  getDepartmentCollection: function(collection_name = default_classrooms) {
+  getDepartmentCollection: function(collection_name = default_departments) {
       return mongoPromise
       .then(function(db) {
           var collection = db.collection(collection_name);

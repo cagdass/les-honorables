@@ -9,11 +9,26 @@ module.exports = (function() {
 
     router.use(bodyParser.json());
 
-    router.get('/student', function(req, res){
+    router.get('/departments', function(req, res) {
+      service_instance.find_departments()
+      .then(function(result) {
+        if (result == null) {
+          res.status(404).send(result);
+        }
+        else {
+          res.status(200).send(result);
+        }
+      })
+      .catch(function(error) {
+        console.error(error);
+      })
+    })
+
+    router.get('/student', function(req, res) {
         // Parameters.
         var firstName = req.query.firstName;
         var lastName = req.query.lastName;
-        
+
         var ip = req.headers['x-forwarded-for'] ||
             req.connection.remoteAddress ||
             req.socket.remoteAddress ||
