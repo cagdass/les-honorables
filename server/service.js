@@ -12,13 +12,7 @@ function service(db){
     return Promise.try(function() {
       return mongo_service.getDepartmentCollection()
       .then(function(collection) {
-        keys = [];
-        docs = collection.find({});
-        console.log(docs);
-        for (key in docs) {
-          keys.push(key);
-        }
-        return keys;
+        return collection.find({});
       })
     });
   }
