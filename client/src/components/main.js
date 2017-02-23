@@ -205,6 +205,14 @@ class Main extends Component {
   }
 
   handleDepartmentChange (event, index, value) {
+    let { firstName, lastName } = this.state;
+    this.context.router.push({
+      query: {
+        "firstName": firstName,
+        "lastName": lastName,
+        "department": value
+      }
+    });
     this.setState({"department": value});
   }
 
