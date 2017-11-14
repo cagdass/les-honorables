@@ -2,6 +2,7 @@
 const config = require("./config.js");
 var express = require('express');
 var https = require('https');
+var fs = require('fs');
 // var bodyParser = require('body-parser')
 // var schedule_service = require('./schedule_service')
 // var service_instance = new schedule_service();
@@ -18,7 +19,7 @@ app.use(function(req, res, next) {
 var router = require('./router');
 app.use(router);
 
-var port = process.argv[2];
+var port = process.argv[2] || 4000;
 
 var options = {
   key: fs.readFileSync(config.key),
