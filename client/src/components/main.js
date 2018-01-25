@@ -155,7 +155,7 @@ class Main extends Component {
           && processedStudents[s].lastName === students[i].lastName) {
             // The student is found.
             found = true;
-
+            processedStudents[s].department = students[i].department;
             // Add the found semester and the honor status to the student's record.
             processedStudents[s].semesters.push({
               'status': students[i].status,
@@ -169,7 +169,6 @@ class Main extends Component {
         processedStudents.push({
           'firstName': students[i].firstName,
           'lastName': students[i].lastName,
-          'department': students[i].department,
           'semesters': []
         })
 
@@ -277,9 +276,9 @@ class Main extends Component {
     this.findStudents(firstName_, lastName_, department);
   }
 
-  getSemester(semester) {
+  getSemester (semester) {
     var suffix = semester.substring(0,4);
-    if(semester[4] === '1') {
+    if (semester[4] === '1') {
       return suffix + " Fall";
     }
     else {
