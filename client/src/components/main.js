@@ -34,8 +34,16 @@ class Service {
       return null;
     })
   }
-}
 
+	getTopStudents() {
+		return baseAPI.get('top_students')
+			.catch(error => {
+				console.error(error);
+				return [];
+			});
+	}
+}
+	
 var service = new Service();
 
 const styles = {
@@ -43,8 +51,14 @@ const styles = {
     textAlign: 'center',
   },
   leProwess: {
-    fontSize: 15
-  }
+      fontSize: 15,
+  },
+	wallOfFame: {
+		fontSize: 18,
+	},
+	topSearched: {
+		fontSize: 10,
+	},
 };
 
 const muiTheme = getMuiTheme({
@@ -95,7 +109,8 @@ class Main extends Component {
       department: _department,
       departments: _departments,
       students: [],
-      processedStudents: []
+		processedStudents: [],
+		topStudents: [],
     };
   }
 
@@ -113,8 +128,19 @@ class Main extends Component {
       this.findStudents(firstName, lastName, department);
     }
 
-    this.findDepartments();
+      this.findDepartments();
+	  this.getTopStudents();
   }
+
+	getTopStudents() {
+		return service.getTopStudents()
+			.then(topStudents => {
+				this.setState({ topStudents });
+			})
+			.catch(error => {
+				this.setState({ topStudents: [] });
+			});					
+	}
 
   findStudents (firstName, lastName, department) {
     return service.searchStudents(firstName, lastName, department)
@@ -286,6 +312,52 @@ class Main extends Component {
     }
   }
 
+	renderTopStudents() {
+		const { topStudents = [] } = this.state;
+
+		return (
+			<Table
+			  selectable={false}
+			  multiSelectable={false}
+			  >
+			  <TableHeader
+				displaySelectAll={false}
+				adjustForCheckbox={false}
+				enableSelectAll={false}>
+				<TableRow>
+				  <TableHeaderColumn colSpan="1">Name</TableHeaderColumn>
+				  <TableHeaderColumn colSpan="2">Yarışmaya nereden katılıyor</TableHeaderColumn>
+				  <TableHeaderColumn colSpan="1">Times searched</TableHeaderColumn>
+				</TableRow>
+			  </TableHeader>
+			  <TableBody
+				deselectOnClickaway
+				displayRowCheckbox={false}
+				showRowHover
+			  >
+				{topStudents.map(student => {
+					const {
+						departments,
+						firstName,
+						lastName,
+						score,
+					} = student;
+					
+					return (
+						<TableRow>
+						  <TableRowColumn colSpan="1">
+							{firstName + ' ' + lastName}
+						  </TableRowColumn>
+						  <TableRowColumn colSpan="2">{departments.join(',')}</TableRowColumn>
+						  <TableRowColumn colSpan="1">{score}</TableRowColumn>
+						</TableRow>
+					);
+			   })}
+			  </TableBody>
+			</Table>
+		);
+	}
+	
   renderStudent (student) {
     let { semesters } = student;
 
@@ -387,7 +459,14 @@ class Main extends Component {
             </div>
             :
             <div>
-              <div style={styles.container}>
+            <div style={styles.container}>
+			<p style={styles.wallOfFame}>
+			Le Wall de Fame			
+			</p>
+			<p style={styles.topStudents}>
+			(most searched pupils)
+			</p>
+			{this.renderTopStudents()}
                 <p style={styles.leProwess}>{"Type in the name of a Bilkent Student and witness their academic prowess"}</p>
                 <br />
                 <TextField

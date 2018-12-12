@@ -59,7 +59,7 @@ module.exports = (function() {
 		    let topStudents = []
                     let numTopStudents = 0;
                     let current, foundAt;		    
-		    for (let i = 0; i < response.length && numTopStudents < 10; i++) {
+		    for (let i = 0; i < response.length && numTopStudents < 5; i++) {
                         current = response[i];
                         foundAt = topStudents.findIndex(student => {
                             return student.firstName === current.firstName
