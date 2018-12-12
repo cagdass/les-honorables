@@ -22,9 +22,65 @@ function service(db){
 					}
 					return depts;
 				})
+				.catch(error => {
+					console.log(error);
+				});
 		});
 	}
 
+	service.topSearchedStudents = function() {
+		return Promise.try(() => {
+			return mongo_service.getCollection()
+				.then(collection => {
+					const limit = 100;
+					// Requesting the top 100 documents for each row corresponds to a semester
+					// in a student's academic career. Will go through results
+					// until 10 'distinct' students are found based on their first and last name combination.
+					const queryResult = collection.aggregate({ '$sort': { 'score': 1 } }, { '$limit': limit });
+					let topStudents = []
+					let numTopStudents = 0;
+					let current, foundAt;
+
+					for (let i = 0; i < queryResult.length && numTopStudents < 10; i++) {
+						current = queryResult[i];
+						foundAt = topStudents.findIndex(student => {
+							return student.firstName === current.firstName
+								&& student.lastName === current.lastName;
+						});
+
+						// Not found
+						if (foundAt === -1) {
+							const {
+								department,
+								firstName,
+								lastName,
+								score,
+							} = current;
+
+							topStudents.push({
+								firstName,
+								lastName,
+								score,
+								departments: [department],
+							});
+							numTopStudents += 1;
+						} else {
+							const { department } = current;
+
+							if (topStudents[foundAt].departments.indexOf(department) === -1) {
+								topStudents[foundAt].departments.push(department);
+							}
+						}
+					}
+
+					return topStudents;
+					
+				})
+				.catch(error => {
+					console.log(error);
+				});					
+		});
+	}
 
 	service.find_student_by_name = function(firstName, lastName, department) {
 		return Promise.try(function() {
@@ -41,6 +97,9 @@ function service(db){
 						return collection.find(query, {'_id': 0}).sort({'firstName': 1, 'lastName': 1, 'semester': 1}).toArray();
 					}
 				})
+				.catch(error => {
+					console.log(error);
+				});
 		})
 	};
 }
