@@ -49,19 +49,55 @@ module.exports = (function() {
         })
     });
 
-	router.get('/top_students', (req, res) => {
-		service_instance.topSearchedStudents()
-			.then(response => {
-				if (response === null) {
-					res.status(404).send(response);
-				} else {
-					res.status(200).send(response);
-				}
-			})
-			.catch(error => {
-				console.error(error);
-			});
-	});
+    router.get('/top_students', (req, res) => {
+	console.log('Request to /top_students');
+	service_instance.topSearchedStudents()
+	    .then(response => {
+		if (response === null) {
+		    res.status(404).send(response);
+		} else {
+		    let topStudents = []
+                    let numTopStudents = 0;
+                    let current, foundAt;		    
+		    for (let i = 0; i < response.length && numTopStudents < 10; i++) {
+                        current = response[i];
+                        foundAt = topStudents.findIndex(student => {
+                            return student.firstName === current.firstName
+                                && student.lastName === current.lastName;
+                        });
+			
+                        // Not found                                                                                                                      
+			if (foundAt === -1) {
+                            const {
+                                department,
+                                firstName,
+                                lastName,
+                                score,
+                            } = current;
+			    
+                            topStudents.push({
+                                firstName,
+                                lastName,
+                                score,
+				departments: [department],
+			    });
+                            numTopStudents += 1;
+                        } else {
+                            const { department } = current;
+			    
+                            if (topStudents[foundAt].departments.indexOf(department) === -1) {
+				topStudents[foundAt].departments.push(department);
+                            }
+			}
+                    }
+		    
+                    res.status(200).send(topStudents);		    
+                }
+	    })
+	    .catch(error => {
+		console.error(error);
+	    });
+    });
 	
     return router;
 })();

@@ -29,54 +29,19 @@ function service(db){
 	}
 
 	service.topSearchedStudents = () => {
+	    console.log('service.topSearchedStudents');
 		return Promise.try(() => {
 			return mongo_service.getCollection()
 				.then(collection => {
-					const limit = 100;
+					const limit = 10;
 					// Requesting the top 100 documents for each row corresponds to a semester
 					// in a student's academic career. Will go through results
 					// until 10 'distinct' students are found based on their first and last name combination.
-					const queryResult = collection.aggregate({ '$sort': { 'score': 1 } }, { '$limit': limit });
-					let topStudents = []
-					let numTopStudents = 0;
-					let current, foundAt;
-
-					for (let i = 0; i < queryResult.length && numTopStudents < 10; i++) {
-						current = queryResult[i];
-						foundAt = topStudents.findIndex(student => {
-							return student.firstName === current.firstName
-								&& student.lastName === current.lastName;
-						});
-
-						// Not found
-						if (foundAt === -1) {
-							const {
-								department,
-								firstName,
-								lastName,
-								score,
-							} = current;
-
-							topStudents.push({
-								firstName,
-								lastName,
-								score,
-								departments: [department],
-							});
-							numTopStudents += 1;
-						} else {
-							const { department } = current;
-
-							if (topStudents[foundAt].departments.indexOf(department) === -1) {
-								topStudents[foundAt].departments.push(department);
-							}
-						}
-					}
-
-					return topStudents;
-					
-				})
-				.catch(error => {
+					return collection.aggregate(
+					    {'$match': {'score': {'$gt': 0}}},
+					    {'$sort': { 'score': -1 } }, 
+					    {'$limit': limit }).toArray();
+				   }).catch(error => {
 					console.log(error);
 				});					
 		});
