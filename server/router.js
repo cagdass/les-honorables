@@ -61,6 +61,7 @@ module.exports = (function() {
 			.catch(error => {
 				console.error(error);
 			});
+	});
 	
     return router;
 })();
