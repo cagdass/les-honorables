@@ -19,7 +19,6 @@ function service(db){
 					for (var i = 0; i < departments.length; i++) {
 						var key = Object.keys(departments[i])[0];
 						depts.push(key);
-						console.log(key);
 					}
 					return depts;
 				})
