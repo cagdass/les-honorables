@@ -28,7 +28,7 @@ function service(db){
 		});
 	}
 
-	service.topSearchedStudents = function() {
+	service.topSearchedStudents = () => {
 		return Promise.try(() => {
 			return mongo_service.getCollection()
 				.then(collection => {

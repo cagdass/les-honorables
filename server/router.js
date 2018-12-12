@@ -22,7 +22,7 @@ module.exports = (function() {
       .catch(function(error) {
         console.error(error);
       })
-    })
+    })	
 
     router.get('/student', function(req, res) {
         // Parameters.
@@ -49,5 +49,18 @@ module.exports = (function() {
         })
     });
 
+	router.get('/top_students', (req, res) => {
+		service_instance.topSearchedStudents()
+			.then(response => {
+				if (response === null) {
+					res.status(404).send(response);
+				} else {
+					res.status(200).send(response);
+				}
+			})
+			.catch(error => {
+				console.error(error);
+			});
+	
     return router;
 })();
