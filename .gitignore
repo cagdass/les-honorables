@@ -1,9 +1,11 @@
+*.DS_Store*
 server/config.js
 # Logs
 logs
 *.log
 npm-debug.log*
 
+client/build
 # Runtime data
 pids
 *.pid
