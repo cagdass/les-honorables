@@ -1,5 +1,7 @@
 // var mongo = require('mongodb')
 const config = require("./config.js");
+const rateLimit = require("express-rate-limit");
+
 var express = require('express');
 var https = require('https');
 var fs = require('fs');
@@ -8,7 +10,15 @@ var fs = require('fs');
 // var service_instance = new schedule_service();
 var app = express();
 
-
+app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+ 
+const limiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 20 // limit each IP to 20 requests per windowMs
+});
+ 
+//  apply to all requests
+app.use(limiter);
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
